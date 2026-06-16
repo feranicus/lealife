@@ -130,6 +130,15 @@ ul.clean li::before{content:"";position:absolute;right:2px;top:16px;width:7px;he
 .t.ev{background:rgba(79,212,122,.14);color:var(--green)}
 .t.ca{background:rgba(247,200,68,.14);color:var(--gold)}
 .t.sk{background:rgba(70,180,255,.14);color:var(--sky)}
+.t.ti{background:rgba(157,123,255,.16);color:var(--violet)}
+
+/* ===== biohacking groups ===== */
+.bgroup{margin-top:26px}
+.bgroup-h{display:flex;align-items:center;gap:11px;margin:0 0 4px}
+.bgroup-h .bgi{flex:0 0 auto;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:rgba(157,123,255,.1);border:1px solid rgba(157,123,255,.22)}
+.bgroup-h .bgi svg{width:22px;height:22px}
+.bgroup-h .bgt{font-family:'Rubik';font-weight:800;font-size:18px;line-height:1.15}
+.bgroup-i{color:var(--muted);font-size:13px;line-height:1.65;margin:0 0 14px;max-width:62ch}
 .buyrow{display:flex;gap:9px;margin-top:14px}
 .buy{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px;border-radius:11px;font-family:'Rubik';font-weight:800;font-size:13px;transition:.2s;border:1px solid var(--line)}
 .buy:active{transform:scale(.97)}

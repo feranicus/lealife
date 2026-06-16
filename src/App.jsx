@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { PHASES, WEEKS, BERRIES, SUPPLEMENTS, AVOID, KETO_PRO, KETO_CON, SOURCES } from './data.js'
+import { PHASES, WEEKS, BERRIES, SUPPLEMENTS, BIOHACK, AVOID, KETO_PRO, KETO_CON, SOURCES } from './data.js'
 
 /* ---------- shopping links ---------- */
 const iherb = (kw) => `https://www.iherb.com/search?kw=${encodeURIComponent(kw)}`
@@ -18,6 +18,11 @@ function Icon({ name, color = '#14e0c8' }) {
     shield: <g {...s}><path d="M12 3l7 3v5c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-3Z" /><path d="M9 12l2 2 4-4" /></g>,
     heart: <g {...s}><path d="M12 20s-7-4.5-9.2-9C1 7.5 3 4.5 6 4.5c2 0 3 1.2 4 2.5 1-1.3 2-2.5 4-2.5 3 0 5 3 3.2 6.5C19 15.5 12 20 12 20Z" /></g>,
     moon: <g {...s}><path d="M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5Z" /></g>,
+    capsule: <g {...s}><path d="M4 14 L14 4a4 4 0 0 1 6 6L10 20a4 4 0 0 1-6-6Z" /><path d="M9 9l6 6" /></g>,
+    sprout: <g {...s}><path d="M12 20v-8" /><path d="M12 12C12 9 9.8 6.8 6.5 6.8 6.5 10 8.8 12 12 12Z" /><path d="M12 12c0-3 2.2-5.2 5.5-5.2C17.5 10 15.2 12 12 12Z" /></g>,
+    sparkle: <g {...s}><path d="M12 3l1.9 5.4L19 10l-5.1 1.6L12 17l-1.9-5.4L5 10l5.1-1.6L12 3Z" /></g>,
+    mineral: <g {...s}><path d="M12 3l8 6-8 12L4 9l8-6Z" /><path d="M4 9h16M12 3v18" /></g>,
+    dna: <g {...s}><path d="M7 3c0 5 10 5 10 10s-10 5-10 10" /><path d="M17 3c0 5-10 5-10 10s10 5 10 10" /><path d="M8.5 6h7M7 12h10M8.5 18h7" /></g>,
   }
   return <svg viewBox="0 0 24 24" aria-hidden="true">{paths[name] || paths.leaf}</svg>
 }
@@ -136,7 +141,7 @@ export default function App() {
       if (hd) hd.classList.toggle('s', scrollY > 40)
       const max = document.body.scrollHeight - innerHeight
       setProg(max > 0 ? (scrollY / max) * 100 : 0)
-      const ids = ['top', 'weeks', 'berries', 'supps', 'safety']
+      const ids = ['top', 'weeks', 'berries', 'supps', 'biohack', 'safety']
       let cur = 'top'
       for (const id of ids) { const el = document.getElementById(id); if (el && el.getBoundingClientRect().top <= innerHeight * 0.4) cur = id }
       setActive(cur)
@@ -147,7 +152,7 @@ export default function App() {
 
   const TABS = [
     ['top', 'בית', 'heart'], ['weeks', 'שבועות', 'shield'], ['berries', 'פירות יער', 'berry'],
-    ['supps', 'תוספים', 'flask'], ['safety', 'בטיחות', 'sun'],
+    ['supps', 'תוספים', 'flask'], ['biohack', 'ביוהאקינג', 'dna'], ['safety', 'בטיחות', 'sun'],
   ]
 
   return (
@@ -185,7 +190,7 @@ export default function App() {
           <div className="stats">
             <div className="stat"><b>12</b><span>שבועות מובְנים</span></div>
             <div className="stat"><b>4</b><span>שלבים מצטברים</span></div>
-            <div className="stat"><b>6</b><span>תוספים + קישורים</span></div>
+            <div className="stat"><b>40+</b><span>פריטים + קישורי קנייה</span></div>
           </div>
         </div>
       </section>
@@ -253,10 +258,44 @@ export default function App() {
         </div>
       </section>
 
+      {/* BIOHACKING */}
+      <section className="sec wrap" id="biohack">
+        <div className="reveal">
+          <div className="sec-tag"><span className="nb">4</span>ביוהאקינג</div>
+          <h2 className="sec-title">ביוהאקינג — <em>השכבה המתקדמת</em></h2>
+          <p className="sub">כל מה שלא נמצא בליבת התוכנית, מתוך מאגר הביוהאקינג. רוב הפריטים ברמת ראיות C (ניסיוני) — תוספות אופציונליות, לא עמודי-תווך. הוסיפי אחד-אחד, כמה ימים זה מזה, ובליווי רופא/ה.</p>
+          <div className="deep">
+            <b>איך לקרוא:</b> Tier A = ראיות חזקות · Tier B = בינוני/מתפתח · Tier C = מנגנוני/קהילתי. סדר עדיפויות: קודם הליבה והבסיס הרפואי, אחר כך פריטי A/B, ולבסוף ניסויי C — לשמור את מה שעוזר ולגזום את השאר. פריטים "מגרי-חיסון" (אכינצאה, אשווגנדה, ליקוריץ, ספירולינה ועוד) אינם כאן — ראי <a href="#safety" style={{ color: 'var(--sky)', borderBottom: '1px solid rgba(70,180,255,.3)' }}>בטיחות</a>.
+          </div>
+        </div>
+        {BIOHACK.map((grp, gi) => (
+          <div className="bgroup reveal" key={gi}>
+            <div className="bgroup-h">
+              <span className="bgi"><Icon name={grp.icon} /></span>
+              <span className="bgt">{grp.group}</span>
+            </div>
+            {grp.intro && <p className="bgroup-i">{grp.intro}</p>}
+            <div className="grid2">
+              {grp.items.map((s, i) => (
+                <div className="pcard" key={i}>
+                  <div className="top">
+                    <span className="picon"><Icon name={s.icon} /></span>
+                    <div><div className="nm">{s.name}</div><div className="lt ltr">{s.latin}</div><div className="dose">{s.dose}</div></div>
+                  </div>
+                  <p className="body">{s.body}</p>
+                  <div className="tagrow">{s.tags.map((t, j) => <span className={`t ${t[0]}`} key={j}>{t[1]}</span>)}</div>
+                  <BuyRow kw={s.kw} />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </section>
+
       {/* KETO */}
       <section className="sec wrap">
         <div className="scard reveal">
-          <div className="sec-tag"><span className="nb">4</span>תזונה</div>
+          <div className="sec-tag"><span className="nb">5</span>תזונה</div>
           <h2 className="sec-title">דיאטת <em>קטו</em> — האם כדאי?</h2>
           <p className="sub">השאלה שביקשת לבדוק. התשובה הכנה: יש היגיון מנגנוני ועדויות מוקדמות, אבל הראיות בזאבת עדיין דלות וקיימים סיכונים אמיתיים. הגישה האחראית — גליקמי-נמוך כברירת מחדל, וקטו רק כניסוי מבוקר וקצוב בזמן תחת מעקב.</p>
           <div className="split">
@@ -270,7 +309,7 @@ export default function App() {
       {/* SAFETY / AVOID */}
       <section className="sec wrap" id="safety">
         <div className="reveal">
-          <div className="sec-tag"><span className="nb">5</span>בטיחות</div>
+          <div className="sec-tag"><span className="nb">6</span>בטיחות</div>
           <h2 className="sec-title">תוספים <em>שכדאי להימנע</em> מהם</h2>
           <p className="sub">החלק הכי חשוב בעמוד הזה. בזאבת המערכת החיסונית כבר תוקפת בטעות — ולכן תוספים "מחזקי חיסון" עלולים להצית התלקחות. אלה תוספים פופולריים שמחקרים קשרו לסיכון מוגבר להתלקחות עור באוטואימוניות.</p>
         </div>
