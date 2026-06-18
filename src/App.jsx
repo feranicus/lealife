@@ -1,5 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import { PHASES, WEEKS, BERRIES, SUPPLEMENTS, BIOHACK, AVOID, KETO_PRO, KETO_CON, SOURCES } from './data.js'
+import { PHASES, WEEKS, BERRIES, SUPPLEMENTS, BIOHACK, AVOID, KETO_PRO, KETO_CON, SOURCES, UI } from './data.js'
+
+/* ---------- i18n helper ---------- */
+// Every translatable field is { he, en, ru }. pick() returns the active language,
+// falling back to Hebrew, and passes plain strings/values through unchanged.
+const pick = (o, lang) =>
+  o && typeof o === 'object' && !Array.isArray(o) && ('he' in o || 'en' in o || 'ru' in o)
+    ? (o[lang] ?? o.he)
+    : o
+
+const LANGS = [['he', 'עב'], ['en', 'EN'], ['ru', 'RU']]
 
 /* ---------- shopping links ---------- */
 const iherb = (kw) => `https://www.iherb.com/search?kw=${encodeURIComponent(kw)}`
@@ -28,7 +38,7 @@ function Icon({ name, color = '#14e0c8' }) {
 }
 
 /* ---------- scroll reveal ---------- */
-function useReveal() {
+function useReveal(dep) {
   useEffect(() => {
     const io = new IntersectionObserver(
       (es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target) } }),
@@ -36,7 +46,7 @@ function useReveal() {
     )
     document.querySelectorAll('.reveal').forEach((el) => io.observe(el))
     return () => io.disconnect()
-  }, [])
+  }, [dep])
 }
 
 /* ---------- floating particles ---------- */
@@ -100,28 +110,29 @@ function BuyRow({ kw }) {
 }
 
 /* ---------- one week (accordion) ---------- */
-function Week({ w, open, onToggle }) {
+function Week({ w, open, onToggle, lang }) {
   const inner = useRef(null)
   const [h, setH] = useState(0)
-  useEffect(() => { setH(open ? inner.current.scrollHeight : 0) }, [open])
+  const t = (o) => pick(o, lang)
+  useEffect(() => { setH(open ? inner.current.scrollHeight : 0) }, [open, lang])
   return (
     <div className={`week c-${w.color} ${open ? 'open' : ''}`}>
       <button className="week-h" onClick={onToggle} aria-expanded={open}>
-        <span className="week-num">{w.n}<small>שבוע</small></span>
+        <span className="week-num">{w.n}<small>{t(UI.weekWord)}</small></span>
         <span className="week-meta">
-          <span className="wt">{w.theme}</span>
-          <span className="wf">{w.focus}</span>
+          <span className="wt">{t(w.theme)}</span>
+          <span className="wf">{t(w.focus)}</span>
         </span>
         <span className="week-chev">⌄</span>
       </button>
       <div className="week-body" style={{ maxHeight: h }}>
         <div className="week-inner" ref={inner}>
-          <div className="deep why"><b>מדוע זה חשוב — לעומק:</b> {w.why}</div>
-          <h4>משימות השבוע</h4>
-          {w.tasks.map((t, i) => (
-            <div className="task" key={i}><span className="ck">✓</span><span>{t}</span></div>
+          <div className="deep why"><b>{t(UI.whyLabel)}</b> {t(w.why)}</div>
+          <h4>{t(UI.tasksLabel)}</h4>
+          {w.tasks.map((tk, i) => (
+            <div className="task" key={i}><span className="ck">✓</span><span>{t(tk)}</span></div>
           ))}
-          <span className="pill">{w.tip}</span>
+          <span className="pill">{t(w.tip)}</span>
         </div>
       </div>
     </div>
@@ -130,10 +141,20 @@ function Week({ w, open, onToggle }) {
 
 /* ============================================================ */
 export default function App() {
-  useReveal()
+  const [lang, setLang] = useState(() => {
+    try { return localStorage.getItem('lealife_lang') || 'he' } catch { return 'he' }
+  })
+  const t = (o) => pick(o, lang)
+  useReveal(lang)
   const [openWeek, setOpenWeek] = useState(1)
   const [prog, setProg] = useState(0)
   const [active, setActive] = useState('top')
+
+  useEffect(() => {
+    document.documentElement.lang = lang
+    document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr'
+    try { localStorage.setItem('lealife_lang', lang) } catch {}
+  }, [lang])
 
   useEffect(() => {
     const onScroll = () => {
@@ -151,8 +172,8 @@ export default function App() {
   }, [])
 
   const TABS = [
-    ['top', 'בית', 'heart'], ['weeks', 'שבועות', 'shield'], ['berries', 'פירות יער', 'berry'],
-    ['supps', 'תוספים', 'flask'], ['biohack', 'ביוהאקינג', 'dna'], ['safety', 'בטיחות', 'sun'],
+    ['top', UI.tabHome, 'heart'], ['weeks', UI.tabWeeks, 'shield'], ['berries', UI.tabBerries, 'berry'],
+    ['supps', UI.tabSupps, 'flask'], ['biohack', UI.tabBiohack, 'dna'], ['safety', UI.tabSafety, 'sun'],
   ]
 
   return (
@@ -164,9 +185,13 @@ export default function App() {
         <div className="nav">
           <a href="#top" className="brand">
             <span className="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M2 12h4l2-7 4 14 2-7h2l1.5 3H22" stroke="#14e0c8" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg></span>
-            תוכנית<b>·עור</b>
+            {t(UI.brandMain)}<b>{t(UI.brandAccent)}</b>
           </a>
-          <span className="brand"><span className="w">12 שבועות</span></span>
+          <div className="langsw" role="group" aria-label="language">
+            {LANGS.map(([code, label]) => (
+              <button key={code} className={lang === code ? 'on' : ''} onClick={() => setLang(code)} aria-pressed={lang === code}>{label}</button>
+            ))}
+          </div>
         </div>
       </header>
 
@@ -174,23 +199,21 @@ export default function App() {
       <section className="hero" id="top">
         <div className="hero-bg" /><Particles /><Ecg />
         <div className="wrap">
-          <span className="eyebrow"><span className="dot" />תוכנית תומכת · DLE · זאבת עורית</span>
+          <span className="eyebrow"><span className="dot" />{t(UI.eyebrow)}</span>
           <h1>
-            <span className="ln"><span>12 שבועות</span></span>
-            <span className="ln"><span className="stroke">לעור</span></span>
-            <span className="ln"><span>רגוע יותר</span></span>
+            <span className="ln"><span>{t(UI.heroL1)}</span></span>
+            <span className="ln"><span className="stroke">{t(UI.heroL2)}</span></span>
+            <span className="ln"><span>{t(UI.heroL3)}</span></span>
           </h1>
-          <p className="lead">
-            תוכנית מעשית שמלווה את הטיפול הרפואי בזאבת עורית — <span className="term">הגנה מהשמש</span>, תזונה אנטי-דלקתית, <span className="term">פירות יער</span> (אובלפיחה, חמוציות), ותוספים מבוססי-ראיות. כל שבוע מסביר לעומק <span className="term">מדוע</span>, ולא רק מה.
-          </p>
+          <p className="lead">{t(UI.lead)}</p>
           <div className="hero-cta">
-            <a href="#weeks" className="btn">לתוכנית המלאה ↓</a>
-            <a href="#safety" className="btn ghost">בטיחות תוספים</a>
+            <a href="#weeks" className="btn">{t(UI.ctaPrimary)}</a>
+            <a href="#safety" className="btn ghost">{t(UI.ctaGhost)}</a>
           </div>
           <div className="stats">
-            <div className="stat"><b>12</b><span>שבועות מובְנים</span></div>
-            <div className="stat"><b>4</b><span>שלבים מצטברים</span></div>
-            <div className="stat"><b>40+</b><span>פריטים + קישורי קנייה</span></div>
+            <div className="stat"><b>12</b><span>{t(UI.statWeeks)}</span></div>
+            <div className="stat"><b>4</b><span>{t(UI.statPhases)}</span></div>
+            <div className="stat"><b>40+</b><span>{t(UI.statItems)}</span></div>
           </div>
         </div>
       </section>
@@ -198,18 +221,18 @@ export default function App() {
       {/* PHASES + WEEKS */}
       <section className="sec wrap" id="weeks">
         <div className="reveal">
-          <div className="sec-tag"><span className="nb">1</span>המסע</div>
-          <h2 className="sec-title">תוכנית <em>12 השבועות</em></h2>
-          <p className="sub">ארבעה שלבים שנבנים זה על זה — לוחצים על כל שבוע כדי לפתוח את ההסבר המעמיק ואת המשימות.</p>
+          <div className="sec-tag"><span className="nb">1</span>{t(UI.tagJourney)}</div>
+          <h2 className="sec-title">{t(UI.titleWeeksA)}<em>{t(UI.titleWeeksEm)}</em>{t(UI.titleWeeksB)}</h2>
+          <p className="sub">{t(UI.subWeeks)}</p>
           <div className="phasebar">
             {PHASES.map((p, i) => (
-              <div className={`ph ${p.cls}`} key={i}><div className="pn">{p.n}</div><div className="pd">{p.d}</div></div>
+              <div className={`ph ${p.cls}`} key={i}><div className="pn">{t(p.n)}</div><div className="pd">{t(p.d)}</div></div>
             ))}
           </div>
         </div>
         <div className="reveal">
           {WEEKS.map((w) => (
-            <Week key={w.n} w={w} open={openWeek === w.n} onToggle={() => setOpenWeek(openWeek === w.n ? 0 : w.n)} />
+            <Week key={w.n} w={w} lang={lang} open={openWeek === w.n} onToggle={() => setOpenWeek(openWeek === w.n ? 0 : w.n)} />
           ))}
         </div>
       </section>
@@ -217,19 +240,19 @@ export default function App() {
       {/* BERRIES */}
       <section className="sec wrap" id="berries">
         <div className="reveal">
-          <div className="sec-tag"><span className="nb">2</span>פירות יער</div>
-          <h2 className="sec-title">פירות <em>היער</em> — נוגדי חמצון</h2>
-          <p className="sub">סטרס חמצוני מלבה את הנגעים אחרי חשיפת UV. פירות יער הם מהמקורות המרוכזים ביותר של אנתוציאנינים ופוליפנולים — והם נוגדי-חמצון, לא "מגרי-חיסון", ולכן בטוחים ומועילים בזאבת.</p>
+          <div className="sec-tag"><span className="nb">2</span>{t(UI.tagBerries)}</div>
+          <h2 className="sec-title">{t(UI.titleBerriesA)}<em>{t(UI.titleBerriesEm)}</em>{t(UI.titleBerriesB)}</h2>
+          <p className="sub">{t(UI.subBerries)}</p>
         </div>
         <div className="grid2 reveal">
           {BERRIES.map((b, i) => (
             <div className="pcard berry" key={i}>
               <div className="top">
                 <span className="picon"><Icon name={b.icon} color="#ff5b8a" /></span>
-                <div><div className="nm">{b.name}</div><div className="lt ltr">{b.latin}</div></div>
+                <div><div className="nm">{t(b.name)}</div><div className="lt ltr">{b.latin}</div></div>
               </div>
-              <p className="body">{b.body}</p>
-              <div className="tagrow">{b.tags.map((t, j) => <span className={`t ${t[0]}`} key={j}>{t[1]}</span>)}</div>
+              <p className="body">{t(b.body)}</p>
+              <div className="tagrow">{b.tags.map((tg, j) => <span className={`t ${tg[0]}`} key={j}>{t(tg[1])}</span>)}</div>
               <BuyRow kw={b.kw} />
             </div>
           ))}
@@ -239,19 +262,19 @@ export default function App() {
       {/* SUPPLEMENTS */}
       <section className="sec wrap" id="supps">
         <div className="reveal">
-          <div className="sec-tag"><span className="nb">3</span>תוספים</div>
-          <h2 className="sec-title">תוספים <em>מבוססי-ראיות</em></h2>
-          <p className="sub">תוספים עם בסיס מחקרי בזאבת/עור — כולם "מרגיעי" או "מאזני" חיסון, ולא "מחזקי חיסון". כל כרטיס כולל קישור חיפוש ל-iHerb ול-Amazon. המינונים להמחשה — את המינון בפועל קובע/ת רופא/ה.</p>
+          <div className="sec-tag"><span className="nb">3</span>{t(UI.tagSupps)}</div>
+          <h2 className="sec-title">{t(UI.titleSuppsA)}<em>{t(UI.titleSuppsEm)}</em>{t(UI.titleSuppsB)}</h2>
+          <p className="sub">{t(UI.subSupps)}</p>
         </div>
         <div className="grid2 reveal">
           {SUPPLEMENTS.map((s, i) => (
             <div className="pcard" key={i}>
               <div className="top">
                 <span className="picon"><Icon name={s.icon} /></span>
-                <div><div className="nm">{s.name}</div><div className="lt ltr">{s.latin}</div><div className="dose">{s.dose}</div></div>
+                <div><div className="nm">{t(s.name)}</div><div className="lt ltr">{s.latin}</div><div className="dose">{t(s.dose)}</div></div>
               </div>
-              <p className="body">{s.body}</p>
-              <div className="tagrow">{s.tags.map((t, j) => <span className={`t ${t[0]}`} key={j}>{t[1]}</span>)}</div>
+              <p className="body">{t(s.body)}</p>
+              <div className="tagrow">{s.tags.map((tg, j) => <span className={`t ${tg[0]}`} key={j}>{t(tg[1])}</span>)}</div>
               <BuyRow kw={s.kw} />
             </div>
           ))}
@@ -261,29 +284,29 @@ export default function App() {
       {/* BIOHACKING */}
       <section className="sec wrap" id="biohack">
         <div className="reveal">
-          <div className="sec-tag"><span className="nb">4</span>ביוהאקינג</div>
-          <h2 className="sec-title">ביוהאקינג — <em>השכבה המתקדמת</em></h2>
-          <p className="sub">כל מה שלא נמצא בליבת התוכנית, מתוך מאגר הביוהאקינג. רוב הפריטים ברמת ראיות C (ניסיוני) — תוספות אופציונליות, לא עמודי-תווך. הוסיפי אחד-אחד, כמה ימים זה מזה, ובליווי רופא/ה.</p>
+          <div className="sec-tag"><span className="nb">4</span>{t(UI.tagBiohack)}</div>
+          <h2 className="sec-title">{t(UI.titleBiohackA)}<em>{t(UI.titleBiohackEm)}</em>{t(UI.titleBiohackB)}</h2>
+          <p className="sub">{t(UI.subBiohack)}</p>
           <div className="deep">
-            <b>איך לקרוא:</b> Tier A = ראיות חזקות · Tier B = בינוני/מתפתח · Tier C = מנגנוני/קהילתי. סדר עדיפויות: קודם הליבה והבסיס הרפואי, אחר כך פריטי A/B, ולבסוף ניסויי C — לשמור את מה שעוזר ולגזום את השאר. פריטים "מגרי-חיסון" (אכינצאה, אשווגנדה, ליקוריץ, ספירולינה ועוד) אינם כאן — ראי <a href="#safety" style={{ color: 'var(--sky)', borderBottom: '1px solid rgba(70,180,255,.3)' }}>בטיחות</a>.
+            <b>{t(UI.biohackDeepA)}</b>{t(UI.biohackDeepBody)}<a href="#safety" style={{ color: 'var(--sky)', borderBottom: '1px solid rgba(70,180,255,.3)' }}>{t(UI.biohackDeepLink)}</a>.
           </div>
         </div>
         {BIOHACK.map((grp, gi) => (
           <div className="bgroup reveal" key={gi}>
             <div className="bgroup-h">
               <span className="bgi"><Icon name={grp.icon} /></span>
-              <span className="bgt">{grp.group}</span>
+              <span className="bgt">{t(grp.group)}</span>
             </div>
-            {grp.intro && <p className="bgroup-i">{grp.intro}</p>}
+            {grp.intro && <p className="bgroup-i">{t(grp.intro)}</p>}
             <div className="grid2">
               {grp.items.map((s, i) => (
                 <div className="pcard" key={i}>
                   <div className="top">
                     <span className="picon"><Icon name={s.icon} /></span>
-                    <div><div className="nm">{s.name}</div><div className="lt ltr">{s.latin}</div><div className="dose">{s.dose}</div></div>
+                    <div><div className="nm">{t(s.name)}</div><div className="lt ltr">{s.latin}</div><div className="dose">{t(s.dose)}</div></div>
                   </div>
-                  <p className="body">{s.body}</p>
-                  <div className="tagrow">{s.tags.map((t, j) => <span className={`t ${t[0]}`} key={j}>{t[1]}</span>)}</div>
+                  <p className="body">{t(s.body)}</p>
+                  <div className="tagrow">{s.tags.map((tg, j) => <span className={`t ${tg[0]}`} key={j}>{t(tg[1])}</span>)}</div>
                   <BuyRow kw={s.kw} />
                 </div>
               ))}
@@ -295,29 +318,29 @@ export default function App() {
       {/* KETO */}
       <section className="sec wrap">
         <div className="scard reveal">
-          <div className="sec-tag"><span className="nb">5</span>תזונה</div>
-          <h2 className="sec-title">דיאטת <em>קטו</em> — האם כדאי?</h2>
-          <p className="sub">השאלה שביקשת לבדוק. התשובה הכנה: יש היגיון מנגנוני ועדויות מוקדמות, אבל הראיות בזאבת עדיין דלות וקיימים סיכונים אמיתיים. הגישה האחראית — גליקמי-נמוך כברירת מחדל, וקטו רק כניסוי מבוקר וקצוב בזמן תחת מעקב.</p>
+          <div className="sec-tag"><span className="nb">5</span>{t(UI.tagDiet)}</div>
+          <h2 className="sec-title">{t(UI.titleKetoA)}<em>{t(UI.titleKetoEm)}</em>{t(UI.titleKetoB)}</h2>
+          <p className="sub">{t(UI.subKeto)}</p>
           <div className="split">
-            <div className="col pro"><h5>✓ בעד / היגיון</h5><ul>{KETO_PRO.map((x, i) => <li key={i}><span /><span>{x}</span></li>)}</ul></div>
-            <div className="col con"><h5>✕ זהירות / נגד</h5><ul>{KETO_CON.map((x, i) => <li key={i}><span /><span>{x}</span></li>)}</ul></div>
+            <div className="col pro"><h5>{t(UI.ketoProH)}</h5><ul>{KETO_PRO.map((x, i) => <li key={i}><span /><span>{t(x)}</span></li>)}</ul></div>
+            <div className="col con"><h5>{t(UI.ketoConH)}</h5><ul>{KETO_CON.map((x, i) => <li key={i}><span /><span>{t(x)}</span></li>)}</ul></div>
           </div>
-          <div className="deep"><b>השורה התחתונה:</b> התחילי בתזונה ים-תיכונית גליקמית-נמוכה (שבועות 5–9). אם רוצים לנסות קטו — כניסוי של 4–6 שבועות בלבד, עם שפע ירקות לא-עמילניים (לשמירת סיבים), שומנים בריאים, ובדיקת פרופיל שומנים לפני ואחרי, בליווי רופא.</div>
+          <div className="deep"><b>{t(UI.ketoBottomA)}</b>{t(UI.ketoBottomBody)}</div>
         </div>
       </section>
 
       {/* SAFETY / AVOID */}
       <section className="sec wrap" id="safety">
         <div className="reveal">
-          <div className="sec-tag"><span className="nb">6</span>בטיחות</div>
-          <h2 className="sec-title">תוספים <em>שכדאי להימנע</em> מהם</h2>
-          <p className="sub">החלק הכי חשוב בעמוד הזה. בזאבת המערכת החיסונית כבר תוקפת בטעות — ולכן תוספים "מחזקי חיסון" עלולים להצית התלקחות. אלה תוספים פופולריים שמחקרים קשרו לסיכון מוגבר להתלקחות עור באוטואימוניות.</p>
+          <div className="sec-tag"><span className="nb">6</span>{t(UI.tagSafety)}</div>
+          <h2 className="sec-title">{t(UI.titleSafetyA)}<em>{t(UI.titleSafetyEm)}</em>{t(UI.titleSafetyB)}</h2>
+          <p className="sub">{t(UI.subSafety)}</p>
         </div>
         <div className="avoid reveal">
-          <div className="ah">⚠ להימנע / להתייעץ לפני שימוש</div>
-          <div className="as">"מחזק חיסון" = בדיוק מה שלא רוצים כשהחיסון כבר היפר-פעיל. תמיד להתייעץ עם הרופא/ה לפני כל תוסף חדש.</div>
+          <div className="ah">{t(UI.avoidHeader)}</div>
+          <div className="as">{t(UI.avoidSub)}</div>
           {AVOID.map((a, i) => (
-            <div className="avoid-item" key={i}><span className="x">✕</span><span><b>{a.name}</b> — {a.why}</span></div>
+            <div className="avoid-item" key={i}><span className="x">✕</span><span><b>{t(a.name)}</b> — {t(a.why)}</span></div>
           ))}
         </div>
       </section>
@@ -325,10 +348,10 @@ export default function App() {
       {/* DISCLAIMER + SOURCES */}
       <section className="sec wrap" style={{ paddingTop: 0 }}>
         <div className="disclaimer reveal">
-          <div className="dh">⚠ חשוב לקרוא</div>
-          מסמך זה הוא חומר עזר חינוכי בלבד — אינו אבחנה, אינו מרשם ואינו תחליף לייעוץ רפואי. זאבת עורית (DLE) מאובחנת ומטופלת על ידי רופא/ה בלבד, לרוב לאחר ביופסיה ובדיקות דם. הגנת שמש, תזונה ותוספים הם <b>שכבת תמיכה</b> סביב הטיפול התרופתי (כמו הידרוקסיכלורוקין וטיפול מקומי) — לא במקומו. חלק מהתוספים מקיימים אינטראקציות עם תרופות או דורשים ניטור — יש להתייעץ עם רופא/ה ורוקח/ת לפני כל שינוי.
+          <div className="dh">{t(UI.disclaimerH)}</div>
+          {t(UI.disclaimerBody)}
           <div className="sources">
-            <b>מקורות:</b><br />
+            <b>{t(UI.sourcesLabel)}</b><br />
             {SOURCES.map((s, i) => (
               <span key={i}><a href={s[1]} target="_blank" rel="noopener noreferrer">{s[0]}</a>{i < SOURCES.length - 1 ? ' · ' : ''}</span>
             ))}
@@ -338,9 +361,9 @@ export default function App() {
 
       <footer>
         <div className="wrap">
-          <div className="brand"><span className="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M2 12h4l2-7 4 14 2-7h2l1.5 3H22" stroke="#14e0c8" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg></span>תוכנית<b>·עור</b></div>
-          <p>הוכן כעזר אישי · להביא ולדון עם רופא/ת העור · אינו מהווה ייעוץ רפואי</p>
-          <div className="cp">חומר חינוכי להמחשה בלבד · {new Date().getFullYear()}</div>
+          <div className="brand"><span className="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M2 12h4l2-7 4 14 2-7h2l1.5 3H22" stroke="#14e0c8" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" /></svg></span>{t(UI.brandMain)}<b>{t(UI.brandAccent)}</b></div>
+          <p>{t(UI.footerTagline)}</p>
+          <div className="cp">{t(UI.footerCopy)} · {new Date().getFullYear()}</div>
         </div>
       </footer>
 
@@ -349,7 +372,7 @@ export default function App() {
         {TABS.map(([id, label, ic]) => (
           <a key={id} href={`#${id}`} className={active === id ? 'on' : ''}>
             <Icon name={ic} color={active === id ? '#14e0c8' : '#7b8c8a'} />
-            {label}
+            {t(label)}
           </a>
         ))}
       </nav>

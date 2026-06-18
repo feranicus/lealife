@@ -6,11 +6,19 @@
   <meta name="theme-color" content="#070b0d" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="description" content="תוכנית תומכת ל-12 שבועות לזאבת עורית (DLE) — אורח חיים, תזונה, פירות יער ותוספים. חומר חינוכי בלבד." />
-  <title>תוכנית 12 שבועות · תמיכה בעור (DLE)</title>
+  <meta name="description" content="תוכנית תומכת ל-12 שבועות לזאבת עורית (DLE) — אורח חיים, תזונה, פירות יער ותוספים · עברית / English / Русский · חומר חינוכי בלבד." />
+  <title>תוכנית 12 שבועות · 12-Week Skin Plan (DLE)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script>
+    // Set language/direction before first paint to avoid a flash (matches App default 'he').
+    try {
+      var l = localStorage.getItem('lealife_lang') || 'he';
+      document.documentElement.lang = l;
+      document.documentElement.dir = l === 'he' ? 'rtl' : 'ltr';
+    } catch (e) {}
+  </script>
 </head>
 <body>
   <div id="root"></div>

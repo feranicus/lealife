@@ -201,3 +201,31 @@ footer .cp{margin-top:18px;color:var(--muted);font-size:12px}
   *{animation:none!important;transition:none!important}
   .reveal{opacity:1;transform:none}
 }
+
+/* ===== tier tag (biohacking) ===== */
+.t.ti{background:rgba(157,123,255,.16);color:var(--violet)}
+
+/* ===== biohacking groups ===== */
+.bgroup{margin-top:26px}
+.bgroup-h{display:flex;align-items:center;gap:11px;margin:0 0 4px}
+.bgroup-h .bgi{flex:0 0 auto;width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:rgba(157,123,255,.1);border:1px solid rgba(157,123,255,.22)}
+.bgroup-h .bgi svg{width:22px;height:22px}
+.bgroup-h .bgt{font-family:'Rubik';font-weight:800;font-size:18px;line-height:1.15}
+.bgroup-i{color:var(--muted);font-size:13px;line-height:1.65;margin:0 0 14px;max-width:62ch}
+
+/* ===== language switch ===== */
+.langsw{display:flex;gap:2px;background:var(--card);border:1px solid var(--line);border-radius:100px;padding:3px}
+.langsw button{font-family:'Rubik';font-weight:800;font-size:11.5px;letter-spacing:.02em;color:var(--muted);padding:5px 10px;border-radius:100px;line-height:1;transition:.2s;-webkit-tap-highlight-color:transparent}
+.langsw button.on{background:var(--teal);color:#04140f}
+.langsw button:active{transform:scale(.94)}
+
+/* Cyrillic-capable body font for Russian (Heebo has no Cyrillic glyphs) */
+html[lang="ru"] body{font-family:'Rubik',sans-serif}
+html[lang="ru"] .lead,
+html[lang="ru"] .pcard .body,
+html[lang="ru"] .sub,
+html[lang="ru"] .deep,
+html[lang="ru"] .task span,
+html[lang="ru"] .avoid-item,
+html[lang="ru"] .col li,
+html[lang="ru"] .disclaimer{font-weight:400}
